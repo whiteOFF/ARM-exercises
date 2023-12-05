@@ -15,7 +15,7 @@ In the first file [`IEEE-754 Converter`](/startup_LPC17xx.s), there is code capa
 
 Finally, since LCP17xx does not have any co-processor, its registers are c0-c7, mapped to CPU registers r4-r11.
 
-This is an example of the call to this coprocessor function:
+This is an example of the call to this coprocessor function used to convert the decimal numebr `1998.142578125`:
   
         LDR r5, =142578125 ; frac part -> c1
         MOV r6, #1998 ; integer -> c2

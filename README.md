@@ -3,7 +3,7 @@
 In this repository, there are some exercises computed during the Computer Architectures class, solved using ARM assembly language.
 
 ## Classic -> IEEE-754 standard
-In the first file [`IEEE-754 Converter`](/startup_LPC17xx.s), there is code capable of transforming an unsigned 32-bit number into a floating-point one, according to the IEEE-754 standard. It uses a coprocessor call (CDP) that takes four parameters in input in the following order and according to the following signature:
+In the first file [`IEEE-754 Converter`](/ieee754_converter/startup_LPC17xx.s), there is code capable of transforming an unsigned 32-bit number into a floating-point one, according to the IEEE-754 standard. It uses a coprocessor call (CDP) that takes four parameters in input in the following order and according to the following signature:
 
     CDP  p0,  imm,  dest,  int,  frac,  sign
 

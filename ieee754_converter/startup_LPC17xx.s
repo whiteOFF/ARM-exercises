@@ -129,22 +129,22 @@ Reset_Handler   PROC
 ;                LDR     R0, =SystemInit
 ;                BLX     R0
 ;                LDR     R0, =__main
-                
-				; setting 18th bit to enable usage fault status register
-				LDR r2, =0xE000ED24 ; address of System Handler Control and State
-				LDR r1, [r2]
-				ORR r1, #0x40000; <- 0000 0000 0000 0100 0000 0000 0000 0000
-				STR r1, [r2]
-				
 
-				LDR R5, =142578125 ; fraction -> c1
-				MOV R6, #1998 ; integer -> c2
-				MOV R7, #0 ; init dest address
-				
-				CDP p0, #1, c3, c2, c1, #0
-				
+			; setting 18th bit to enable usage fault status register
+			LDR r2, =0xE000ED24 ; address of System Handler Control and State
+			LDR r1, [r2]
+			ORR r1, #0x40000; <- 0000 0000 0000 0100 0000 0000 0000 0000
+			STR r1, [r2]
+			
+			; sample inputs
+			LDR R5, =142578125 ; fraction -> c1
+			MOV R6, #1998 ; integer -> c2
+			MOV R7, #0 ; init dest address
+			
+			CDP p0, #1, c3, c2, c1, #0
 
-				B .
+
+			B .
                 ENDP
 
 
@@ -173,124 +173,122 @@ UsageFault_Handler\
                 PROC
                 EXPORT  UsageFault_Handler        [WEAK]
 								
-				LDR r0, =0xE000ED2A
-				LDRH r1, [r0]
-				TST R1, #8
-				BEQ idk
-				
-				; IEEE754 EXCEPTION
-				TST LR, #4
-				ITE EQ
-				MRSEQ r0, MSP
-				MRSNE r0, PSP
-				
-				; get pc instruction
-				LDR r1, [r0, #24]; =PC
-				LDR r2, [r1] ;instruction CDP
-				ROR r2, #16
-				
-				; update pc to next instruction
-				ADD r1, #4
-				STR r1, [r0, #24]; PC <- PC+4
-				
-				; check if PC is: 0x-E1--0--
-				TST r2, #0xE100000
-				BEQ idk
-				TST r2, #0x100
-				BNE	idk
-				
-				; start iee754 computation
-				PUSH {r4-r11}
-				
-				; destination
-				MOV R4, R2
-				AND R4, #0xf000
-				LSR R4, #10 ; offest *4 (shift 12-2)
-				
-				; integer -> R5
-				MOV R7, R2
-				AND R7, #0xF0000
-				LSR R7, #14
-				LDR R5, [SP, R7] 
-				
-				; fractional -> R6
-				MOV R7, R2
-				AND R7, #0XF
-				LSL R7, #2
-				LDR R6, [SP, R7]
-				
-				; sign -> R7
-				MOV R7, R2
-				AND R7, #0xF0
-				LSR R7, #5
-				
-				MOV R10, R7
-				LSL R10, #8
-								
-				; exponent
-				PUSH {R5}
-				
-				MOV R8, #0
-				B test
-inc				LSL R5, #1
-				ADD R8, #1
+			LDR r0, =0xE000ED2A
+			LDRH r1, [r0]
+			TST R1, #8 ; checking 3rd bit for coprocessor execution attempt
+			BEQ dummy
+			
+			; looking for current stack used from LR <- EXC_RETURN
+			TST LR, #4
+			ITE EQ
+			MRSEQ r0, MSP
+			MRSNE r0, PSP
+			
+			; get pc instruction
+			LDR r1, [r0, #24]; =PC
+			LDR r2, [r1] ;instruction CDP
+			ROR r2, #16
+			
+			; update pc to next instruction
+			ADD r1, #4
+			STR r1, [r0, #24]; PC <- PC+4
+			
+			; check if PC is: 0x-E1--0-- for coprocessor IEEE-754 exc
+			TST r2, #0xE100000
+			BEQ idk
+			TST r2, #0x100
+			BNE	dummy
+			
+			;start iee754 computation
+			PUSH {r4-r11}
+			
+			; destination address
+			MOV R4, R2
+			AND R4, #0xf000
+			LSR R4, #10 ; offest *4 (shift 12-2)
+			
+			; integer -> R5
+			MOV R7, R2
+			AND R7, #0xF0000
+			LSR R7, #14 offest *4 (shift 16-2)
+			LDR R5, [SP, R7] 
+			
+			; fractional -> R6
+			MOV R7, R2
+			AND R7, #0XF
+			LSL R7, #2 offest *4 (shift 2)
+			LDR R6, [SP, R7]
+			
+			; sign -> R7
+			MOV R7, R2
+			AND R7, #0xF0
+			LSR R7, #5
+			
+			MOV R10, R7 ; final result will be stored here in R10
+			LSL R10, #8
+							
+			; exponent
+			PUSH {R5}
+			
+			MOV R8, #0
+			B test
+inc			LSL R5, #1
+			ADD R8, #1
 test			TST R5, #0x80000000
-				BEQ inc
+			BEQ inc
+			
+			MOV R3, R8
+			NEG R8, R8
+			ADD R8, #158
+			
+			POP {R5}
 				
-				MOV R3, R8
-				NEG R8, R8
-				ADD R8, #158
+			ADD R10, R8
+			LSL R10, #23
+
+     
+			; mantissa
+			MOV R2, #0x80000000
+			ASR R2, R3
+			NEG R2, R2
+			SUB R2, R2, #1
+			AND R5, R2
 				
-				POP {R5}
-				
-				ADD R10, R8
-				LSL R10, #23
-				
-				
-				; mantissa
-				MOV R2, #0x80000000
-				ASR R2, R3
-				NEG R2, R2
-				SUB R2, R2, #1
-				AND R5, R2
-				
-				NEG R3, R3
-				ADD R3, #31
-				NEG R3, R3
-				ADD R3, #23
-				
-				; first higher multiple of 10
-				MOV R1, #10
-				MOV R7, #1
-				B check10
+			NEG R3, R3
+			ADD R3, #31
+			NEG R3, R3
+			ADD R3, #23
+			
+			; first higher multiple of 10
+			MOV R1, #10
+			MOV R7, #1
+			B check10
 mul10			MUL R7, R7, R1
 check10			CMP R7, R6
-				BLO mul10
+			BLO mul10
 				
 iter			CMP R3, #0
-				BEQ realend
-				SUB R3, #1
-				LSL R5, #1
-				LSL R6, #1
-				CMP R6, R7
-				BHS isone
-				AND R5, #0xFFFFFFFE
-				B iter
+			BEQ realend
+			SUB R3, #1
+			LSL R5, #1
+			LSL R6, #1
+			CMP R6, R7
+			BHS isone
+			AND R5, #0xFFFFFFFE
+			B iter
 isone			ORR R5, #1
-				SUB R6, R7
-				B iter
+			SUB R6, R7
+			B iter
 				
 
 realend			ADD R10, R10, R5
-				
-				; END IEEE754 EXCEPTION
-				STR R10, [SP, R4] ; FUTURE SAVING
-				POP {R4-R11}
-				B endd
+			STR R10, [SP, R4] ; FUTURE SAVING
+			POP {R4-R11}
+			B endd
 				
 endd			BX LR
-idk             B .
-                ENDP
+dummy             	B . ; dummy implementation for other faults
+              		ENDP
 					
 					
 					

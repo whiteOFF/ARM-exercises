@@ -1,4 +1,4 @@
-# ARM-exercises
+# ARM Exercises
 
 In this repository, there are some exercises computed during the Computer Architectures class, solved using ARM assembly language.
 

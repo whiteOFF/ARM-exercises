@@ -284,9 +284,8 @@ isone			ORR R5, #1
 realend			ADD R10, R10, R5
 			STR R10, [SP, R4] ; FUTURE SAVING
 			POP {R4-R11}
-			B endd
-				
-endd			BX LR
+			BX LR
+   
 dummy             	B . ; dummy implementation for other faults
               		ENDP
 					

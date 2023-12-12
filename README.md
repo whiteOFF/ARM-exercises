@@ -12,7 +12,7 @@ In the first file [IEEE-754 Converter](/ieee754_converter/startup_LPC17xx.s), th
 - `imm` is the operation executed by the co processor; IEEE-754 converter uses `#1` 
 - `int` is the integer part of the number to be converted (mapped ad `cn`)
 - `frac` is the fractional part of the number to be converted (mapped ad `cn`)
-- `sign` is the sign of the numner (`#0` for positive, `1` for negative)
+- `sign` is the sign of the numner (`#0` for positive, `#1` for negative)
 Finally, since LCP17xx does not have any co-processor, its registers are c0-c7, mapped to CPU registers r4-r11.
 
 This is an example of the call to this coprocessor function used to convert the decimal number `1998.142578125`:

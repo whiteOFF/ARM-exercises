@@ -77,15 +77,11 @@ notmax1:
 	MOV DH, AL ; save max value
 
 	MOV AH, 2
-	MOV AL, CL
-	INT 21h	   ; value repetead
+	MOV DL, CL
+	INT 21h	   ; value repetead max times
 
 	MOV AH, 2
-	MOV AL, ' ' 
-	INT 21h    ; space
-
-	MOV AH, 2
-	MOV AL, ' ' 
+	MOV DL, ' ' 
 	INT 21h    ; space
 
 	;PRINT DH ; number of occurrences

@@ -6,8 +6,8 @@
 .MODEL small
 .STACK       
 .DATA
-    lin1 DB DIM DUP('_')     
-    occ1 DB CHARS DUP(0)     
+    line DB DIM DUP('_')     
+    occ DB CHARS DUP(0)     
      
 .CODE
 .STARTUP       
@@ -16,22 +16,22 @@
 ; 1- TAKING IN INPUT EVERY CHARACTER FOR EVERY LINE
 
     MOV CX, DIM ; reverse counter   
-    MOV DI, 0   ; counter
+    XOR DI, DI   ; counter
     MOV AH, 1   ; reading setting
     INT 21H     ; read a char, put in AL
 
-lab1:   MOV line1(DI), AL
+lab:    MOV line(DI), AL
         INC DI
         INT 21H
         
         CMP AL, 13  ; jump if ENTER (10 = LF)
-        JNZ cond1
+        JNZ cond
         CMP DI, MIN
         JNC exit1
         
         cond1: DEC CX      ; jump condition if
                CMP CX, 0   ; the 50th char has
-               JNZ lab1    ; been inserted
+               JNZ lab    ; been inserted
 exit1: 
 
 
@@ -39,18 +39,18 @@ exit1:
 
 	MOV DI, 0	; iterator init
 	MOV AH, 0
-dict1:  MOV AL, lin1[DI]
+dict:   MOV AL, line[DI]
 
 	CMP AL, underline ; compare to '_'
-	JZ enddict1	  ; and jump if equal
+	JZ enddict	  ; and jump if equal
 
 	SUB AL, 65
 	MOV SI, AX    ; update counter of caracter
-	INC occ1[SI]
+	INC occ[SI]
 	INC DI
 	CMP DI, DIM
-	JNZ dict1
-enddict1:
+	JNZ dict
+enddict:
 
 
 ; 3- LOOKING FOR MAX OCCURRENCE
@@ -59,17 +59,19 @@ enddict1:
 	XOR AL, AL ; max
 	XOR BL, BL ; temp var
 	XOR CX, CX ; value to print
-count1:	MOV BH, line1[DI]
+
+count:	MOV BH, line[DI]
 	COMP AL, BL
-	JAE notmax1
+	JAE notmax
+
 	MOV AL, BL
 	MOV CX, DI
 	ADD CX, 65
 	
-notmax1:
+notmax:
 	INC DI
 	CMP DI, CHARS
-	JNZ count1
+	JNZ count
 
 
 ; 4- PRINT MAX VALUE

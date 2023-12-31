@@ -1,6 +1,6 @@
 # ARM Exercises
 
-In this repository, there are some exercises computed during the Computer Architectures II class, solved using ARM assembly language.
+In this repository, there are some exercises computed during the Computer Architectures II class, solved using ARM assembly language or even 8086 assembly language.
 
 ---
 ## IEEE-754 Converter

@@ -1,7 +1,6 @@
     DIM EQU 50
     MIN EQU 20
     CHARS EQU 52
-    underline EQU "_"
 
 .MODEL small
 .STACK       
@@ -13,35 +12,32 @@
 .STARTUP       
 
 
-; 1- TAKING IN INPUT EVERY CHARACTER FOR EVERY LINE
+; 1- TAKING IN INPUT CHARS IN line
 
-    MOV CX, DIM ; reverse counter   
-    XOR DI, DI   ; counter
-    MOV AH, 1   ; reading setting
-    INT 21H     ; read a char, put in AL
+	XOR DI, DI  ; counter
+	MOV AH, 1   ; reading setting
 
-lab:    MOV line(DI), AL
+lab:	INT 21H     ; read a char, put in AL
+	MOV line[DI], AL
         INC DI
-        INT 21H
         
         CMP AL, 13  ; jump if ENTER (10 = LF)
         JNZ cond
         CMP DI, MIN
         JNC exit1
         
-        cond1: DEC CX      ; jump condition if
-               CMP CX, 0   ; the 50th char has
-               JNZ lab    ; been inserted
+        cond:	CMP DI, DIM   ; the 50th char has
+        	JNZ lab    ; been inserted
 exit1: 
 
 
 ; 2- COUNTING OCCURRENCES OF EVERY CHARACTER
 
-	MOV DI, 0	; iterator init
+	MOV DI, 0	  ; iterator init
 	MOV AH, 0
 dict:   MOV AL, line[DI]
 
-	CMP AL, underline ; compare to '_'
+	CMP AL, 13 ; compare to '\n'
 	JZ enddict	  ; and jump if equal
 
 	SUB AL, 65

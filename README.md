@@ -68,3 +68,7 @@ Instead, to print values in the standard output, another type of interrupt has b
 - `AH` is set to 2
 - `DL` contains the value to be printed out
 - `INT 21h` interrupt to be used
+
+---
+## Caesar Cipher in 8086
+In folder [Caesar Encoder 8086](/cesar_encoder_8086) there is a simple code written in 8086 assembly language able to encode using a line according to Caesar encrypting method, by using any key in range [0, 52]: this constraint is due to the meaningless usage of other keys. Just a note: in order to avoid printing unreadble chars (so in order to get only numbers in range [65, 122], and avoiding position in range [91, 96], too), further checks has been implemented.

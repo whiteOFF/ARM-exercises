@@ -26,7 +26,8 @@ lab    	INT 21H     ; read a char, put in AL
         JNZ lab    ; been inserted
 exit: 
 
-
+; 2- PRINT THE ENCODED LINE
+	
 	XOR DI, DI
 
 pcesar:	MOV AH, 2	 ; print setup
